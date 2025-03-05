@@ -23,10 +23,9 @@ public class AuthorController {
     }
 
     @PostMapping("like")
-    public int createLike(@RequestBody LikeRequest request) {
+    public void createLike(@RequestBody LikeRequest request) {
         kafkaProducer.sendLikeRequest(request);
-//        return authorRepository.incrementLikesByName(request.authorName());
-        return 1;
+//      authorRepository.incrementLikesByName(request);
     }
 
 }

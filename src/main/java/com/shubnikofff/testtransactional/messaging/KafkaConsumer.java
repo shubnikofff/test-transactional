@@ -15,7 +15,7 @@ public class KafkaConsumer {
 
     @KafkaListener(topics = "likes.request.v1", concurrency = "10")
     public void listen(LikeRequest request) {
-        authorRepository.incrementLikesByName(request.authorName());
+        authorRepository.incrementLikesByName(request);
     }
 
 }

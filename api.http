@@ -6,5 +6,7 @@ POST http://localhost:8080/like
 Content-Type: application/json
 
 {
-  "authorName": "Bruce Wayne"
+  "authorName": "Bruce Wayne",
+  "userName": "John Smith",
+  "amount": 2
 }
