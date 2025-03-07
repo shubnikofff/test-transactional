@@ -1,6 +1,3 @@
-### Get likes
-GET http://localhost:8080
-
 ### Increment likes
 POST http://localhost:8080/like
 Content-Type: application/json

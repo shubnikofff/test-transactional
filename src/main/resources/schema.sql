@@ -1,8 +1,9 @@
 drop table if exists author cascade;
 create table author
 (
-    name  varchar primary key,
-    likes integer not null default 0
+    name       varchar primary key,
+    likes      integer   not null default 0,
+    updated_at timestamp not null default now()
 );
 
 drop table if exists history;
@@ -12,6 +13,7 @@ create table history
     user_name   varchar   not null,
     author_name varchar   not null,
     like_amount integer   not null,
+    status      varchar   not null,
     created_at  timestamp not null,
     saved_at    timestamp not null default now(),
 

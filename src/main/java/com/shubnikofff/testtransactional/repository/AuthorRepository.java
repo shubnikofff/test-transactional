@@ -1,48 +1,65 @@
 package com.shubnikofff.testtransactional.repository;
 
 
-import com.shubnikofff.testtransactional.dto.LikeRequest;
+import com.shubnikofff.testtransactional.model.Author;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
 public class AuthorRepository {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
-    private final HistoryRepository historyRepository;
 
-    private final static String SELECT_LIKES_BY_NAME = "SELECT likes FROM author WHERE name = :name";
 
-    public Integer getLikesByName(String name) {
+    public Optional<Integer> getLikesByName(String name) {
+        try {
+            final var likes = jdbcTemplate.queryForObject(
+                "SELECT likes FROM author WHERE name = :name",
+                Map.of("name", name),
+                (ResultSet rs, int rowNum) -> rs.getInt("likes")
+            );
+            return Optional.ofNullable(likes);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
+    public Author getAuthorByName(String name) {
         return jdbcTemplate.queryForObject(
-            SELECT_LIKES_BY_NAME,
+            "SELECT name, likes, updated_at FROM author WHERE name = :name",
             Map.of("name", name),
-            (ResultSet rs, int rowNum) -> rs.getInt("likes")
+            (ResultSet rs, int rowNum) -> new Author(
+                rs.getString("name"),
+                rs.getInt("likes"),
+                rs.getTimestamp("updated_at").toInstant()
+            )
         );
     }
 
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
-    @Retryable(maxAttempts = 5)
-    public void incrementLikesByName(LikeRequest request) {
-        historyRepository.save(request);
-
-        final var likes = jdbcTemplate.queryForObject(
-            "SELECT likes FROM author WHERE name = :name",
-            Map.of("name", request.authorName()),
-            (ResultSet rs, int rowNum) -> rs.getInt("likes")
-        );
-
+    public void updateLikesByName(int likes, String name) {
         jdbcTemplate.update(
             "UPDATE author SET likes=:likes  WHERE name = :name",
-            Map.of("name", request.authorName(), "likes", likes + request.amount())
+            Map.of("name", name, "likes", likes)
+        );
+    }
+
+    public int updateLikesByNameAndUpdatedAt(int likes, String name, Instant updatedAt) {
+        final var mapSqlParameterSource = new MapSqlParameterSource(Map.of("name", name, "likes", likes))
+            .addValue("updated_at", Timestamp.from(updatedAt));
+
+        return jdbcTemplate.update(
+            "UPDATE author SET likes=:likes  WHERE name = :name AND updated_at = :updated_at",
+            mapSqlParameterSource
         );
     }
 }
