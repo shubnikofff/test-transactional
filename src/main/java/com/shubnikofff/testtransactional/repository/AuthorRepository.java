@@ -4,6 +4,7 @@ package com.shubnikofff.testtransactional.repository;
 import com.shubnikofff.testtransactional.model.Author;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -38,11 +40,14 @@ public class AuthorRepository {
         return jdbcTemplate.queryForObject(
             "SELECT name, likes, updated_at FROM author WHERE name = :name",
             Map.of("name", name),
-            (ResultSet rs, int rowNum) -> new Author(
-                rs.getString("name"),
-                rs.getInt("likes"),
-                rs.getTimestamp("updated_at").toInstant()
-            )
+            rowMapper
+        );
+    }
+
+    public List<Author> getAll() {
+        return jdbcTemplate.query(
+            "SELECT name, likes, updated_at FROM author",
+            rowMapper
         );
     }
 
@@ -52,6 +57,12 @@ public class AuthorRepository {
             Map.of("name", name, "likes", likes)
         );
     }
+
+    private final RowMapper<Author> rowMapper = (rs, rowNum) -> new Author(
+        rs.getString("name"),
+        rs.getInt("likes"),
+        rs.getTimestamp("updated_at").toInstant()
+    );
 
     public int updateLikesByNameAndUpdatedAt(int likes, String name, Instant updatedAt) {
         final var mapSqlParameterSource = new MapSqlParameterSource(Map.of("name", name, "likes", likes))

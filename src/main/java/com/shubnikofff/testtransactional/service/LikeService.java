@@ -3,6 +3,7 @@ package com.shubnikofff.testtransactional.service;
 
 import com.shubnikofff.testtransactional.dto.LikeRequest;
 import com.shubnikofff.testtransactional.repository.AuthorRepository;
+import com.shubnikofff.testtransactional.repository.LikeBufferRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Recover;
@@ -19,8 +20,9 @@ public class LikeService {
 
     private final AuthorRepository authorRepository;
     private final HistoryService historyService;
+    private final LikeBufferRepository likeBufferRepository;
 
-//    @Transactional(isolation = Isolation.SERIALIZABLE)
+    //    @Transactional(isolation = Isolation.SERIALIZABLE)
     @Retryable
     public void addLikes(LikeRequest request) {
         authorRepository.getLikesByName(request.authorName()).ifPresentOrElse(
@@ -63,5 +65,10 @@ public class LikeService {
         }
 
         historyService.addToHistory(request, "PROCESSED");
-     }
+    }
+
+    public void addLikesBuffered(LikeRequest request) {
+        likeBufferRepository.addLikesByAuthor(request.authorName(), request.amount());
+        historyService.addToHistory(request, "PROCESSED");
+    }
 }

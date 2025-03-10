@@ -22,7 +22,7 @@ public class LikeSimulation extends Simulation {
         .exec(http("Post like")
             .post("/like")
             .body(StringBody("""
-                {"authorName": "#{author_name}", "userName": "#{randomAlphanumeric(10)}", "amount":  "#{randomInt(1,6)}"}
+                {"authorName": "#{author_name}", "userName": "#{randomAlphanumeric(10)}", "amount": 1}
                 """))
         );
 

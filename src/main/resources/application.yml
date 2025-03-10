@@ -16,6 +16,12 @@ spring:
     init:
       mode: always
 
+  data:
+    redis:
+      port: 16379
+      ssl:
+        enabled: false
+
   kafka:
     bootstrap-servers: localhost:19092
     consumer:
