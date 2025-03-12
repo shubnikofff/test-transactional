@@ -17,7 +17,6 @@ public class DumpLikesBufferJob {
     private final LikeBufferRepository likeBufferRepository;
     private final AuthorRepository authorRepository;
 
-
     @Scheduled(fixedRate = 1000)
     void run() {
         for (final var name: likeBufferRepository.getAllAuthorNames()) {
@@ -25,10 +24,13 @@ public class DumpLikesBufferJob {
 
             if(likes != null && likes > 0) {
                 log.info("Dumping {} likes for {}", likes, name);
-                final var currentLikes = authorRepository.getLikesByName(name)
-                    .orElseThrow(() -> new RuntimeException("Could not find author " + name));
-                authorRepository.updateLikesByName(currentLikes + likes, name);
-                likeBufferRepository.deductLikesByAuthor(name, likes);
+                authorRepository.getLikesByName(name).ifPresentOrElse(
+                    currentLikes -> {
+                        authorRepository.updateLikesByName(currentLikes + likes, name);
+                        likeBufferRepository.deductLikesByAuthor(name, likes);
+                    }, () -> {
+                        throw new RuntimeException("Could not find author " + name);
+                    });
             }
         }
     }
