@@ -51,8 +51,8 @@ public class AuthorRepository {
         );
     }
 
-    public void updateLikesByName(int likes, String name) {
-        jdbcTemplate.update(
+    public int updateLikesByName(int likes, String name) {
+        return jdbcTemplate.update(
             "UPDATE author SET likes=:likes  WHERE name = :name",
             Map.of("name", name, "likes", likes)
         );
