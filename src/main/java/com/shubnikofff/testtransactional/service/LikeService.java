@@ -73,8 +73,7 @@ public class LikeService {
             final var author = authorRepository.getAuthorByName(request.authorName());
             updateCount = authorRepository.incrementLikesByNameAndUpdatedAt(
                     request.amount(),
-                    author.name(),
-                    author.updatedAt()
+                    author.name()
             );
         }
 

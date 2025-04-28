@@ -75,18 +75,16 @@ public class AuthorRepository {
 
     public int incrementLikesByNameAndUpdatedAt(
             int toAdd,
-            String name,
-            Instant updatedAt
+            String name
     ) {
         final var mapSqlParameterSource = new MapSqlParameterSource(
                     Map.of(
                             "name", name,
                             "to_add", toAdd
-                    ))
-                .addValue("updated_at", Timestamp.from(updatedAt));
+                    ));
 
         return jdbcTemplate.update(
-                "UPDATE author SET likes = likes + :to_add WHERE name = :name AND updated_at = :updated_at",
+                "UPDATE author SET likes = likes + :to_add WHERE name = :name",
                 mapSqlParameterSource
         );
     }
