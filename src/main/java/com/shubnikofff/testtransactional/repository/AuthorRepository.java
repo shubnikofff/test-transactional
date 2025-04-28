@@ -22,7 +22,6 @@ public class AuthorRepository {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
-
     public Optional<Integer> getLikesByName(String name) {
         try {
             final var likes = jdbcTemplate.queryForObject(
@@ -73,4 +72,21 @@ public class AuthorRepository {
             mapSqlParameterSource
         );
     }
+
+    public int incrementLikesByNameAndUpdatedAt(
+            int toAdd,
+            String name
+    ) {
+        final var mapSqlParameterSource = new MapSqlParameterSource(
+                    Map.of(
+                            "name", name,
+                            "to_add", toAdd
+                    ));
+
+        return jdbcTemplate.update(
+                "UPDATE author SET likes = likes + :to_add WHERE name = :name",
+                mapSqlParameterSource
+        );
+    }
+
 }

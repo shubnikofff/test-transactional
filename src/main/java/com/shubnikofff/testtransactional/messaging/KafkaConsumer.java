@@ -19,7 +19,7 @@ public class KafkaConsumer {
 //    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void listen(LikeRequest request) {
 //        likeService.addLikes(request);
-        likeService.addLikesOptimistic(request);
+        likeService.atomicUpdate(request);
     }
 
 }
