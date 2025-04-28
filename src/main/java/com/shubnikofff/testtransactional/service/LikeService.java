@@ -22,8 +22,8 @@ public class LikeService {
     private final HistoryService historyService;
     private final LikeBufferRepository likeBufferRepository;
 
-    //    @Transactional(isolation = Isolation.SERIALIZABLE)
     @Retryable
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void addLikes(LikeRequest request) {
         authorRepository.getLikesByName(request.authorName()).ifPresentOrElse(
             likes -> {
@@ -61,6 +61,20 @@ public class LikeService {
                 author.likes() + request.amount(),
                 author.name(),
                 author.updatedAt()
+            );
+        }
+
+        historyService.addToHistory(request, "PROCESSED");
+    }
+
+    public void atomicUpdate(LikeRequest request) {
+        int updateCount = 0;
+        while (updateCount == 0) {
+            final var author = authorRepository.getAuthorByName(request.authorName());
+            updateCount = authorRepository.incrementLikesByNameAndUpdatedAt(
+                    request.amount(),
+                    author.name(),
+                    author.updatedAt()
             );
         }
 
